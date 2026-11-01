@@ -1,15 +1,83 @@
-# 大肥鱼：从零开发设计包
+# 大肥鱼（dafeiyu-live）
 
-日期：2026-10-31。这里仅包含新项目的技术方案和协作规范，没有业务代码，也没有引入任何外部主播项目代码或旧项目实现。
+抖音直播间的虚拟 AI 主播。以统一角色持续对话、记住必要上下文，在受限能力内调用工具。
 
-阅读顺序：
+当前状态：**可运行的成品版本**（P0–P4）：
+普通弹幕聊天、统一角色、会话上下文、有界工具循环、**真实音频播放与句级字幕**、
+**LOL 锐评 / 现场签名 / 合作打 Boss**、**纪念品归档与浏览**、主播控制台、
+**多房间隔离**、**长期记忆与数据保留**。
 
-1. [完整技术架构](architecture.md)：需求、角色、harness、工具、节目、媒体链路、数据和验收。
-2. [目录与 AI 开发规范](development-spec.md)：目标目录、上下文分工、skills、原创实施流程。
-3. [新窗口开工指令](START-HERE.md)：可复制给新 agent 的任务与最初上下文模板。
+模型、LOL 数据、TTS 仍是**可替换适配 + 明确 mock**；没有真实抖音/hs-gw/TTS 联调，不能当线上使用。
 
-这些选型是本轮架构建议，不是假装已经部署或实测的事实。新项目从空目录开始，不从旧目录复制实现，不下载 AI-Vtuber 等项目作为代码基线。
+## 快速开始
 
-明确区分：使用标准开源库和工具，与复制其他业务项目实现不同。本方案允许通过包管理器安装框架、数据库驱动、测试库和媒体工具；要求业务逻辑、提示词、节目规则和页面由需求独立设计实现。外部资源记录来源，实际引用遵循对应许可，不能承诺任何自动生成代码都经过法律意义上的原创认证。
+```bash
+pnpm install
+pnpm build
+pnpm dev:server     # http://127.0.0.1:8787
+```
 
-当前待核实：hs-gw、TTS 服务与正式音色、真实弹幕入口、LOL API 契约、角色素材、ts1 负载及媒体性能。以上缺失不阻止模拟开发，但真实上线验收必须单独完成。
+- 舞台（OBS 浏览器源）：`http://127.0.0.1:8787/stage?token=dev-only-stage`
+- 控制台：`http://127.0.0.1:8787/studio?token=dev-only-studio`
+- 纪念品：`http://127.0.0.1:8787/souvenirs`
+
+注入一条模拟弹幕：
+
+```bash
+curl -X POST http://127.0.0.1:8787/api/ingest/events \
+  -H "authorization: Bearer dev-only-ingest" \
+  -H "content-type: application/json" \
+  -d '{"roomId":"room-main","eventId":"m1","viewerId":"v1","type":"chat.message","payload":{"text":"你是谁","viewerName":"观众"}}'
+```
+
+## 检查
+
+```bash
+pnpm check        # typecheck + contracts/server/web 测试
+pnpm test:e2e     # Playwright（需要系统 Chrome）
+pnpm replay       # 回放脱敏事件样本
+pnpm eval:character  # 角色情景集（默认 mock）
+```
+
+本机实测：contracts 9、server 177、web 16、e2e 20，全部通过。
+
+## 目录
+
+```text
+apps/server         Fastify + SQLite + harness + 节目 + TTS 适配
+apps/web            React/Vite：/stage /studio /souvenirs
+packages/contracts  唯一协议源（zod）
+characters/dafeiyu  角色身份（唯一来源）
+migrations/         SQL 迁移
+tests/e2e           Playwright
+docs/               项目事实、任务、决策、运行手册
+.agents/skills      开发用 skills（不是主播工具）
+```
+
+## 节目
+
+| 弹幕 | 效果 |
+| --- | --- |
+| 任意普通文本 | 模型聊天（可自动调用只读工具） |
+| `查战绩 Faker#KR1` | LOL 锐评：战绩卡片 + 点评（mock 数据） |
+| `签名 大肥鱼最帅` | 生成原创笔迹签名，归档到纪念品 |
+| `开Boss` / `攻击` / `蓄力` / `治疗` / `结算` | 合作打 Boss，限时回合，每观众一次 |
+
+多房间：接口加 `?room=<id>`（事件用请求体 `roomId`），每房间独立的队列、租约、回合与限流。
+
+## 文档
+
+- 当前状态与限制：[docs/project.md](docs/project.md)
+- 待办：[docs/tasks.md](docs/tasks.md)
+- 命令与环境：[docs/development.md](docs/development.md)
+- 来源与依赖：[docs/references.md](docs/references.md)
+- 最初设计包：[architecture.md](architecture.md) / [development-spec.md](development-spec.md) / [START-HERE.md](START-HERE.md)
+
+## 硬约束
+
+观众实时互动留在抖音直播间；网站只承接纪念品。角色身份不可被观众覆盖。
+不向模型暴露 shell、Docker socket 或任意文件写入。mock 与真实来源必须明确区分。
+
+## 许可
+
+项目最终开源许可未定（由用户决定）。依赖与素材各自保留许可，见 [docs/references.md](docs/references.md)。

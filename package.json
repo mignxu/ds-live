@@ -1,0 +1,29 @@
+{
+  "name": "dafeiyu-live",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "dev:server": "pnpm --filter @dafeiyu/server dev",
+    "dev:web": "pnpm --filter @dafeiyu/web dev",
+    "build": "pnpm --filter @dafeiyu/contracts build && pnpm --filter @dafeiyu/server build && pnpm --filter @dafeiyu/web build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "check": "pnpm check-context && pnpm lint && pnpm typecheck && pnpm test",
+    "test:e2e": "playwright test",
+    "replay": "pnpm --filter @dafeiyu/server replay",
+    "check-context": "node scripts/check-context.mjs",
+    "lint": "eslint .",
+    "eval:character": "pnpm --filter @dafeiyu/server eval:character"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "eslint": "10.14.0",
+    "typescript-eslint": "8.72.1",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "@dafeiyu/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/main.js",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "replay": "tsx src/scripts/replay.ts",
+    "eval:character": "tsx src/scripts/eval-character.ts"
+  },
+  "dependencies": {
+    "@dafeiyu/contracts": "workspace:*",
+    "@fastify/cookie": "11.1.5",
+    "@fastify/static": "10.1.8",
+    "@fastify/websocket": "11.3.5",
+    "better-sqlite3": "13.0.3",
+    "fastify": "5.12.7",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "9.6.0",
+    "@types/node": "22.20.5",
+    "@types/ws": "8.18.2",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5",
+    "ws": "8.22.0"
+  }
+}

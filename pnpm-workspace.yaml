@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+
+# 只允许确实需要本地编译/下载二进制的依赖运行安装脚本。
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+
+# pnpm 的发布年龄门槛会拦住刚发布的版本；这里显式列出本项目锁定的版本。
+minimumReleaseAgeExclude:
+  - '@fastify/websocket@11.3.5'
